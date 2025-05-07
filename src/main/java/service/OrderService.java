@@ -1,0 +1,76 @@
+package service;
+
+import com.brokerage.order_api.model.*;
+import com.brokerage.order_api.repository.AssetRepository;
+import com.brokerage.order_api.repository.OrderRepository;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.Optional;
+
+@Service
+@RequiredArgsConstructor
+public class OrderService {
+
+    private final OrderRepository orderRepository;
+    private final AssetRepository assetRepository;
+
+    @Transactional
+    public void createOrder(Customer customer, String assetName, OrderSide orderSide, BigDecimal orderSize, BigDecimal price) {
+
+        Asset depositAsset = assetRepository.findByCustomerIdAndName(customer.getId(), "TRY")
+                .orElseThrow(() -> new RuntimeException("TRY asset was not found for the customer"));
+        Asset targetAsset = new Asset();
+
+        if (orderSide == OrderSide.BUY) {
+
+            BigDecimal cost = price.multiply(orderSize);
+
+            BigDecimal usableDeposit = depositAsset.getUsableSize();
+
+            if (usableDeposit.compareTo(cost) < 0) {
+                throw new RuntimeException("Insufficient TRY funds to place the order");
+            }
+
+            depositAsset.setUsableSize(depositAsset.getUsableSize().subtract(cost));
+
+            Optional<Asset> assetToBuyOptional = assetRepository.findByCustomerIdAndName(customer.getId(), assetName);
+            if (assetToBuyOptional.isPresent()) {
+                targetAsset = assetToBuyOptional.get();
+            } else {
+                targetAsset = Asset.builder()
+                        .customer(customer)
+                        .name(assetName)
+                        .size(BigDecimal.ZERO)
+                        .usableSize(BigDecimal.ZERO)
+                        .build();
+                assetRepository.save(targetAsset);
+            }
+        } else if (orderSide == OrderSide.SELL) {
+            targetAsset = assetRepository.findByCustomerIdAndName(customer.getId(), assetName)
+                    .orElseThrow(() -> new RuntimeException("Insufficient stocks to place the order"));
+
+            if (targetAsset.getSize().compareTo(orderSize) < 0) {
+                throw new RuntimeException("Insufficient stocks to place the order");
+            }
+            targetAsset.setUsableSize(targetAsset.getUsableSize().subtract(orderSize));
+            assetRepository.save(targetAsset);
+
+        }
+        else {
+            throw new IllegalArgumentException("Invalid Order Side");
+        }
+
+        Order order = Order.builder()
+                .side(orderSide)
+                .size(orderSize)
+                .price(price)
+                .status(OrderStatus.PENDING)
+                .customer(customer)
+                .asset(targetAsset)
+                .build();
+        orderRepository.save(order);
+    }
+}
