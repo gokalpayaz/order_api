@@ -98,4 +98,30 @@ public class OrderService {
         order.setStatus(OrderStatus.CANCELED);
     }
 
+    @Transactional
+    public void matchOrder(long orderId){
+        Order order = orderRepository.findByIdAndStatus(orderId, OrderStatus.PENDING).orElseThrow(() -> new RuntimeException("Order not found"));
+        OrderSide orderSide = order.getSide();
+        BigDecimal orderSize = order.getSize();
+        BigDecimal orderValue = orderSize.multiply(order.getPrice());
+        Asset depositAsset = assetRepository.findByCustomerIdAndName(order.getCustomer().getId(), "TRY")
+                .orElseThrow(() -> new RuntimeException("TRY asset not found"));
+        Asset targetAsset = order.getAsset();
+
+        if (orderSide == OrderSide.BUY) {
+            // Finalize payment from TRY
+            depositAsset.setSize(depositAsset.getSize().subtract(orderValue));
+            // Grant stocks to customer
+            targetAsset.setUsableSize(targetAsset.getUsableSize().add(orderSize));
+            targetAsset.setSize(targetAsset.getSize().add(orderSize));
+        } else {
+            // Remove stocks from user
+            targetAsset.setSize(targetAsset.getSize().subtract(orderSize));
+            // Grant deposit to customer
+            depositAsset.setUsableSize(depositAsset.getUsableSize().add(orderValue));
+            depositAsset.setSize(depositAsset.getSize().add(orderValue));
+        }
+        order.setStatus(OrderStatus.MATCHED);
+
+    }
 }
