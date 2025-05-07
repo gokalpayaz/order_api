@@ -80,4 +80,22 @@ public class OrderService {
         return orderRepository.findByCustomerIdAndCreatedAtBetween(customer.getId(),start,end);
     }
 
+    @Transactional
+    public void deleteOrder (long orderId) {
+        Order order = orderRepository.findByIdAndStatus(orderId, OrderStatus.PENDING).orElseThrow(() -> new RuntimeException("No eligible order found"));
+        OrderSide orderSide = order.getSide();
+        BigDecimal orderSize = order.getSize();
+        BigDecimal orderValue = orderSize.multiply(order.getPrice());
+        Asset targetAsset = order.getAsset();
+        Asset depositAsset = assetRepository.findByCustomerIdAndName(order.getCustomer().getId(), "TRY")
+                .orElseThrow(() -> new RuntimeException("TRY asset was not found"));
+
+        if (orderSide == OrderSide.BUY) {
+            depositAsset.setUsableSize(depositAsset.getUsableSize().add(orderValue));
+        } else {
+            targetAsset.setUsableSize(targetAsset.getUsableSize().add(orderSize));
+        }
+        order.setStatus(OrderStatus.CANCELED);
+    }
+
 }
