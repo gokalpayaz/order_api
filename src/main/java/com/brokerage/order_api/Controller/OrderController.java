@@ -7,7 +7,7 @@ import com.brokerage.order_api.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
-import service.OrderService;
+import com.brokerage.order_api.service.OrderService;
 
 import java.math.BigDecimal;
 import java.time.Instant;

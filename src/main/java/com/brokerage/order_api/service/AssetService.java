@@ -1,4 +1,4 @@
-package service;
+package com.brokerage.order_api.service;
 
 import com.brokerage.order_api.model.Asset;
 import com.brokerage.order_api.model.Customer;
