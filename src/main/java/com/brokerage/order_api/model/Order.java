@@ -37,4 +37,9 @@ public class Order {
     @JoinColumn(name = "customerId")
     private Customer customer;
 
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = Instant.now();
+    }
+
 }
