@@ -20,7 +20,7 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private OrderSide side;
 
-    private Double size;
+    private BigDecimal size;
 
     private BigDecimal price;
 
