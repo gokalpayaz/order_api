@@ -5,6 +5,7 @@ import com.brokerage.order_api.repository.AssetRepository;
 import com.brokerage.order_api.repository.OrderRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -12,6 +13,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -74,6 +76,8 @@ public class OrderService {
                 .asset(targetAsset)
                 .build();
         orderRepository.save(order);
+        log.info("{} Order for {} created with {} per stock", orderSide, targetAsset.getName(), order.getPrice());
+
     }
 
     public List<Order> listOrders (Customer customer, Instant start, Instant end){
@@ -96,6 +100,8 @@ public class OrderService {
             targetAsset.setUsableSize(targetAsset.getUsableSize().add(orderSize));
         }
         order.setStatus(OrderStatus.CANCELED);
+        log.info("{} Order for {} cancelled ", orderSide, targetAsset.getName());
+
     }
 
     @Transactional
@@ -122,6 +128,6 @@ public class OrderService {
             depositAsset.setSize(depositAsset.getSize().add(orderValue));
         }
         order.setStatus(OrderStatus.MATCHED);
-
+        log.info("{} Order for {} matched ", orderSide, targetAsset.getName());
     }
 }
