@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -73,4 +75,9 @@ public class OrderService {
                 .build();
         orderRepository.save(order);
     }
+
+    public List<Order> listOrders (Customer customer, Instant start, Instant end){
+        return orderRepository.findByCustomerIdAndCreatedAtBetween(customer.getId(),start,end);
+    }
+
 }
