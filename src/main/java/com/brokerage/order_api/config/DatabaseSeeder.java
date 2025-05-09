@@ -8,6 +8,7 @@ import com.brokerage.order_api.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.weaver.ast.Or;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -21,19 +22,20 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final CustomerRepository customerRepository;
     private final AssetRepository assetRepository;
     private final OrderRepository orderRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception {
         if (customerRepository.count() == 0) {
             Customer admin = Customer.builder()
                     .userName("admin")
-                    .password("adminPassword")
+                    .password(passwordEncoder.encode("adminPassword"))
                     .role("admin")
                     .build();
 
             Customer user1 = Customer.builder()
                     .userName("user1")
-                    .password("user1password")
+                    .password(passwordEncoder.encode("user1Password"))
                     .role("user")
                     .build();
 
