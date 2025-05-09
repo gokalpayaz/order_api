@@ -1,7 +1,8 @@
 package com.brokerage.order_api.controller;
 
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
@@ -63,8 +64,8 @@ public class OrderController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<Order>>> listOrder(
             @RequestParam Long customerId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant start,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant end
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end
     ) {
         Customer customer = customerRepository.findById(customerId)
         .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
@@ -73,7 +74,10 @@ public class OrderController {
             throw new AccessDeniedException("You are not authorized to list orders.");
         }
 
-        List<Order> orders = orderService.listOrders(customer, start, end);
+        List<Order> orders = orderService.listOrders(
+            customer, 
+            start.atStartOfDay(ZoneId.systemDefault()).toInstant(), 
+            end.atStartOfDay(ZoneId.systemDefault()).toInstant());
         return ResponseEntity.ok(
             ApiResponse.<List<Order>>builder()
                 .success(true)
