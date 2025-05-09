@@ -1,19 +1,25 @@
 package com.brokerage.order_api.service;
 
-import com.brokerage.order_api.exception.EntityNotFoundException;
-import com.brokerage.order_api.exception.InsufficientFundsException;
-import com.brokerage.order_api.model.*;
-import com.brokerage.order_api.repository.AssetRepository;
-import com.brokerage.order_api.repository.OrderRepository;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
+import com.brokerage.order_api.exception.EntityNotFoundException;
+import com.brokerage.order_api.exception.InsufficientFundsException;
+import com.brokerage.order_api.model.Asset;
+import com.brokerage.order_api.model.Customer;
+import com.brokerage.order_api.model.Order;
+import com.brokerage.order_api.model.OrderSide;
+import com.brokerage.order_api.model.OrderStatus;
+import com.brokerage.order_api.repository.AssetRepository;
+import com.brokerage.order_api.repository.OrderRepository;
+
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -108,7 +114,7 @@ public class OrderService {
 
     @Transactional
     public void matchOrder(long orderId){
-        Order order = orderRepository.findByIdAndStatus(orderId, OrderStatus.PENDING).orElseThrow(() -> new EntityNotFoundException("Order not found"));
+        Order order = orderRepository.findByIdAndStatus(orderId, OrderStatus.PENDING).orElseThrow(() -> new EntityNotFoundException("No eligible order found"));
         OrderSide orderSide = order.getSide();
         BigDecimal orderSize = order.getSize();
         BigDecimal orderValue = orderSize.multiply(order.getPrice());
