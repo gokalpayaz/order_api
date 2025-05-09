@@ -27,13 +27,13 @@ public class DatabaseSeeder implements CommandLineRunner {
     public void run(String... args) throws Exception {
         if (customerRepository.count() == 0) {
             Customer admin = Customer.builder()
-                    .userName("admin")
+                    .username("admin")
                     .password(passwordEncoder.encode("adminPassword"))
                     .role("admin")
                     .build();
 
             Customer user1 = Customer.builder()
-                    .userName("user1")
+                    .username("user1")
                     .password(passwordEncoder.encode("user1Password"))
                     .role("user")
                     .build();

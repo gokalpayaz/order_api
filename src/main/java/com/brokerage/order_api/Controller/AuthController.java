@@ -24,7 +24,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<String>> login(@RequestBody LoginRequest request){
-        Customer customer = customerRepository.findByUserName(request.getUsername());
+        Customer customer = customerRepository.findByUsername(request.getUsername());
 
         if (customer == null || !passwordEncoder.matches(request.getPassword(), customer.getPassword()))
             return ResponseEntity.status(401).body(ApiResponse.<String>builder()
@@ -33,7 +33,7 @@ public class AuthController {
                     .data(null)
                     .build());
 
-        String token =  jwtUtil.generateToken(customer.getUserName(), customer.getRole());
+        String token =  jwtUtil.generateToken(customer.getUsername(), customer.getRole());
         return ResponseEntity.ok(ApiResponse.<String>builder()
                 .success(true)
                 .message("Login Successful")
