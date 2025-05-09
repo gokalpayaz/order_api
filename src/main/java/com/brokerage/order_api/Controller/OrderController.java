@@ -1,22 +1,31 @@
 package com.brokerage.order_api.controller;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
+
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.brokerage.order_api.dto.ApiResponse;
+import com.brokerage.order_api.exception.EntityNotFoundException;
 import com.brokerage.order_api.model.Customer;
 import com.brokerage.order_api.model.Order;
 import com.brokerage.order_api.model.OrderSide;
 import com.brokerage.order_api.repository.CustomerRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.*;
+import com.brokerage.order_api.security.AuthUtil;
 import com.brokerage.order_api.service.OrderService;
-import org.springframework.http.ResponseEntity;
-import com.brokerage.order_api.dto.ApiResponse;
-import com.brokerage.order_api.exception.EntityNotFoundException;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.List;
 
 @RestController
 @RequestMapping("/orders")
@@ -38,6 +47,10 @@ public class OrderController {
         Customer customer = customerRepository.findById(customerId)
         .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 
+        if (!AuthUtil.isAuthorizedForCustomer(customer)) {
+            throw new AccessDeniedException("You are not authorized to create orders.");
+        }
+
         orderService.createOrder(customer, assetName, side, size, price);
         return ResponseEntity.ok(
             ApiResponse.<Void>builder()
@@ -55,6 +68,11 @@ public class OrderController {
     ) {
         Customer customer = customerRepository.findById(customerId)
         .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+
+        if (!AuthUtil.isAuthorizedForCustomer(customer)) {
+            throw new AccessDeniedException("You are not authorized to list orders.");
+        }
+
         List<Order> orders = orderService.listOrders(customer, start, end);
         return ResponseEntity.ok(
             ApiResponse.<List<Order>>builder()
@@ -64,6 +82,7 @@ public class OrderController {
         );
     }
 
+    @PreAuthorize("hasRole('admin')")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteOrder(
             @RequestParam Long orderId
@@ -75,7 +94,8 @@ public class OrderController {
                 .build()
         );
     }
-
+    
+    @PreAuthorize("hasRole('admin')")
     @PostMapping("/{id}/match") 
     public ResponseEntity<ApiResponse<Void>> matchOrder(
             @RequestParam Long orderId
