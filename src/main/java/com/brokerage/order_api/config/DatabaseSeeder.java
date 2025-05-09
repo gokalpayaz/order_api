@@ -1,21 +1,29 @@
 package com.brokerage.order_api.config;
 
 
-import com.brokerage.order_api.model.*;
-import com.brokerage.order_api.repository.AssetRepository;
-import com.brokerage.order_api.repository.CustomerRepository;
-import com.brokerage.order_api.repository.OrderRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+
+import com.brokerage.order_api.model.Asset;
+import com.brokerage.order_api.model.Customer;
+import com.brokerage.order_api.model.Order;
+import com.brokerage.order_api.model.OrderSide;
+import com.brokerage.order_api.model.OrderStatus;
+import com.brokerage.order_api.repository.AssetRepository;
+import com.brokerage.order_api.repository.CustomerRepository;
+import com.brokerage.order_api.repository.OrderRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class DatabaseSeeder implements CommandLineRunner {
 
     private final CustomerRepository customerRepository;
@@ -68,7 +76,7 @@ public class DatabaseSeeder implements CommandLineRunner {
             assetRepository.save(appleAsset);
             orderRepository.save(buyOrder);
 
-            System.out.println("Sample data seeded.");
+            log.info("Sample data seeded.");
 
         }
 
