@@ -10,13 +10,18 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
     // Managed beans are like adding services to DI container (services.AddSingleton..)
     @Bean
-    public  SecurityFilterChain filterChain(HttpSecurity http) throws  Exception {
-
-        http
-            .csrf().disable()
-            .headers().disable()
-            .authorizeHttpRequests()
-            .anyRequest().permitAll();
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.csrf(csrf -> csrf.disable())// csrf and headers are disabled for H2-console. Should be removed in production
+            .headers(headers -> headers.disable())
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(
+        "/auth/login",
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/h2-console/**"
+                ).permitAll()
+                .anyRequest().authenticated()
+            );
         return http.build();
     }
 }
