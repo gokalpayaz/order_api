@@ -6,7 +6,6 @@ import com.brokerage.order_api.repository.AssetRepository;
 import com.brokerage.order_api.repository.CustomerRepository;
 import com.brokerage.order_api.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
-import org.aspectj.weaver.ast.Or;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;

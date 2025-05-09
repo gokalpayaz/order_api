@@ -4,11 +4,14 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
 
 import java.security.Key;
 import java.util.Date;
 
+
 @Component
+@Slf4j
 public class JwtUtil {
 
     private final Key key;
@@ -46,6 +49,7 @@ public class JwtUtil {
             parseClaims(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
+            log.error("JWT validation failed: {}", e.getMessage());
             return false;
         }
     }

@@ -1,4 +1,4 @@
-package com.brokerage.order_api.Controller;
+package com.brokerage.order_api.controller;
 
 import com.brokerage.order_api.dto.ApiResponse;
 import com.brokerage.order_api.exception.EntityNotFoundException;

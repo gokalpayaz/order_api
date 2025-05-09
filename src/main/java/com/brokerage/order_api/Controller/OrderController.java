@@ -1,4 +1,4 @@
-package com.brokerage.order_api.Controller;
+package com.brokerage.order_api.controller;
 
 import com.brokerage.order_api.model.Customer;
 import com.brokerage.order_api.model.Order;
@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import com.brokerage.order_api.service.OrderService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import com.brokerage.order_api.dto.ApiResponse;
 import com.brokerage.order_api.exception.EntityNotFoundException;
