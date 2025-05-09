@@ -1,5 +1,7 @@
 package com.brokerage.order_api.service;
 
+import com.brokerage.order_api.exception.EntityNotFoundException;
+import com.brokerage.order_api.exception.InsufficientFundsException;
 import com.brokerage.order_api.model.*;
 import com.brokerage.order_api.repository.AssetRepository;
 import com.brokerage.order_api.repository.OrderRepository;
@@ -25,7 +27,7 @@ public class OrderService {
     public void createOrder(Customer customer, String assetName, OrderSide orderSide, BigDecimal orderSize, BigDecimal price) {
 
         Asset depositAsset = assetRepository.findByCustomerIdAndName(customer.getId(), "TRY")
-                .orElseThrow(() -> new RuntimeException("TRY asset was not found for the customer"));
+                .orElseThrow(() -> new EntityNotFoundException("TRY asset was not found for the customer"));
         Asset targetAsset = new Asset();
 
         if (orderSide == OrderSide.BUY) {
@@ -35,7 +37,7 @@ public class OrderService {
             BigDecimal usableDeposit = depositAsset.getUsableSize();
 
             if (usableDeposit.compareTo(cost) < 0) {
-                throw new RuntimeException("Insufficient TRY funds to place the order");
+                throw new InsufficientFundsException("Insufficient TRY funds to place the order");
             }
 
             depositAsset.setUsableSize(depositAsset.getUsableSize().subtract(cost));
@@ -54,10 +56,10 @@ public class OrderService {
             }
         } else if (orderSide == OrderSide.SELL) {
             targetAsset = assetRepository.findByCustomerIdAndName(customer.getId(), assetName)
-                    .orElseThrow(() -> new RuntimeException("Insufficient stocks to place the order"));
+                    .orElseThrow(() -> new EntityNotFoundException("Insufficient stocks to place the order"));
 
             if (targetAsset.getSize().compareTo(orderSize) < 0) {
-                throw new RuntimeException("Insufficient stocks to place the order");
+                throw new InsufficientFundsException("Insufficient stocks to place the order");
             }
             targetAsset.setUsableSize(targetAsset.getUsableSize().subtract(orderSize));
             assetRepository.save(targetAsset);
@@ -86,13 +88,13 @@ public class OrderService {
 
     @Transactional
     public void deleteOrder (long orderId) {
-        Order order = orderRepository.findByIdAndStatus(orderId, OrderStatus.PENDING).orElseThrow(() -> new RuntimeException("No eligible order found"));
+        Order order = orderRepository.findByIdAndStatus(orderId, OrderStatus.PENDING).orElseThrow(() -> new EntityNotFoundException("No eligible order found"));
         OrderSide orderSide = order.getSide();
         BigDecimal orderSize = order.getSize();
         BigDecimal orderValue = orderSize.multiply(order.getPrice());
         Asset targetAsset = order.getAsset();
         Asset depositAsset = assetRepository.findByCustomerIdAndName(order.getCustomer().getId(), "TRY")
-                .orElseThrow(() -> new RuntimeException("TRY asset was not found"));
+                .orElseThrow(() -> new EntityNotFoundException("TRY asset was not found"));
 
         if (orderSide == OrderSide.BUY) {
             depositAsset.setUsableSize(depositAsset.getUsableSize().add(orderValue));
@@ -106,12 +108,12 @@ public class OrderService {
 
     @Transactional
     public void matchOrder(long orderId){
-        Order order = orderRepository.findByIdAndStatus(orderId, OrderStatus.PENDING).orElseThrow(() -> new RuntimeException("Order not found"));
+        Order order = orderRepository.findByIdAndStatus(orderId, OrderStatus.PENDING).orElseThrow(() -> new EntityNotFoundException("Order not found"));
         OrderSide orderSide = order.getSide();
         BigDecimal orderSize = order.getSize();
         BigDecimal orderValue = orderSize.multiply(order.getPrice());
         Asset depositAsset = assetRepository.findByCustomerIdAndName(order.getCustomer().getId(), "TRY")
-                .orElseThrow(() -> new RuntimeException("TRY asset not found"));
+                .orElseThrow(() -> new EntityNotFoundException("TRY asset not found"));
         Asset targetAsset = order.getAsset();
 
         if (orderSide == OrderSide.BUY) {
