@@ -24,7 +24,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import com.brokerage.order_api.exception.GlobalExceptionHandler;
 import com.brokerage.order_api.model.Asset;
 import com.brokerage.order_api.model.Customer;
-import com.brokerage.order_api.model.OrderStatus;
 import com.brokerage.order_api.repository.CustomerRepository;
 import com.brokerage.order_api.security.AuthUtil;
 import com.brokerage.order_api.service.AssetService;
