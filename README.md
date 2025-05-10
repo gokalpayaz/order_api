@@ -213,4 +213,12 @@ Authorization: Bearer {your-jwt-token}
 ```
 POST /orders/1/match
 Authorization: Bearer {your-jwt-token}
-``` 
+```
+
+## Configuration
+
+The application is pre-configured for demo purposes with all necessary settings in:
+- `application.properties`: Common settings
+- `application-local.properties`: Local development settings including JWT configuration
+
+> **Note**: For a production application, this file would be ignored.
