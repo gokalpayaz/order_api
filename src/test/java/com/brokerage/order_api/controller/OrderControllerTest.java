@@ -30,6 +30,7 @@ import com.brokerage.order_api.model.Customer;
 import com.brokerage.order_api.model.Order;
 import com.brokerage.order_api.model.OrderStatus;
 import com.brokerage.order_api.repository.CustomerRepository;
+import com.brokerage.order_api.repository.OrderRepository;
 import com.brokerage.order_api.security.AuthUtil;
 import com.brokerage.order_api.service.OrderService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,6 +46,9 @@ class OrderControllerTest {
     @Mock
     private CustomerRepository customerRepository;
 
+    @Mock
+    private OrderRepository orderRepository;
+
     private OrderController orderController;
     private Customer customer;
 
@@ -55,7 +59,7 @@ class OrderControllerTest {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         
-        orderController = new OrderController(orderService, customerRepository);
+        orderController = new OrderController(orderService, customerRepository, orderRepository);
         mockMvc = MockMvcBuilders.standaloneSetup(orderController)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
@@ -201,22 +205,57 @@ class OrderControllerTest {
 
     @Test
     void deleteOrder_Success() throws Exception {
-        // PreAuthorize is not enforced in this test setup
-        mockMvc.perform(delete("/orders/1")
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true));
+        Order order = Order.builder().id(1L).customer(customer).build();
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+        
+        try (MockedStatic<AuthUtil> authUtil = Mockito.mockStatic(AuthUtil.class)) {
+            authUtil.when(() -> AuthUtil.isAuthorizedForCustomer(any())).thenReturn(true);
+            mockMvc.perform(delete("/orders/1")
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true));
+        }
     }
 
     @Test
-    void deleteOrder_ServiceThrows() throws Exception {
-        doThrow(new EntityNotFoundException("No eligible order found")).when(orderService)
-                .deleteOrder(anyLong());
+    void deleteOrder_OrderNotFound() throws Exception {
+        when(orderRepository.findById(1L)).thenReturn(Optional.empty());
+        
         mockMvc.perform(delete("/orders/1")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED))
                 .andDo(print())
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteOrder_Forbidden() throws Exception {
+        Order order = Order.builder().id(1L).customer(customer).build();
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+        
+        try (MockedStatic<AuthUtil> authUtil = Mockito.mockStatic(AuthUtil.class)) {
+            authUtil.when(() -> AuthUtil.isAuthorizedForCustomer(any())).thenReturn(false);
+            mockMvc.perform(delete("/orders/1")
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED))
+                    .andDo(print())
+                    .andExpect(status().isForbidden());
+        }
+    }
+
+    @Test
+    void deleteOrder_ServiceThrows() throws Exception {
+        Order order = Order.builder().id(1L).customer(customer).build();
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+        
+        try (MockedStatic<AuthUtil> authUtil = Mockito.mockStatic(AuthUtil.class)) {
+            authUtil.when(() -> AuthUtil.isAuthorizedForCustomer(any())).thenReturn(true);
+            doThrow(new EntityNotFoundException("No eligible order found")).when(orderService)
+                    .deleteOrder(anyLong());
+            mockMvc.perform(delete("/orders/1")
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED))
+                    .andDo(print())
+                    .andExpect(status().isNotFound());
+        }
     }
 
     @Test

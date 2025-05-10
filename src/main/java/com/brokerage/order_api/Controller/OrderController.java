@@ -23,6 +23,7 @@ import com.brokerage.order_api.model.Customer;
 import com.brokerage.order_api.model.Order;
 import com.brokerage.order_api.model.OrderSide;
 import com.brokerage.order_api.repository.CustomerRepository;
+import com.brokerage.order_api.repository.OrderRepository;
 import com.brokerage.order_api.security.AuthUtil;
 import com.brokerage.order_api.service.OrderService;
 
@@ -37,6 +38,7 @@ public class OrderController {
 
     private final OrderService orderService;
     private final CustomerRepository customerRepository;
+    private final OrderRepository orderRepository;
 
     @PostMapping
     public ResponseEntity<ApiResponse<Void>> createOrder(
@@ -87,11 +89,17 @@ public class OrderController {
         );
     }
 
-    @PreAuthorize("hasRole('admin')")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteOrder(
             @PathVariable("id") Long orderId
     ) {
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+            
+        if (!AuthUtil.isAuthorizedForCustomer(order.getCustomer())) {
+            throw new AccessDeniedException("You are not authorized to delete this order.");
+        }
+        
         orderService.deleteOrder(orderId);
         return ResponseEntity.ok(
             ApiResponse.<Void>builder()
