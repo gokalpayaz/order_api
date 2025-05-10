@@ -11,6 +11,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -89,7 +90,7 @@ public class OrderController {
     @PreAuthorize("hasRole('admin')")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteOrder(
-            @RequestParam Long orderId
+            @PathVariable("id") Long orderId
     ) {
         orderService.deleteOrder(orderId);
         return ResponseEntity.ok(
@@ -102,7 +103,7 @@ public class OrderController {
     @PreAuthorize("hasRole('admin')")
     @PostMapping("/{id}/match") 
     public ResponseEntity<ApiResponse<Void>> matchOrder(
-            @RequestParam Long orderId
+            @PathVariable("id") Long orderId
     ) {
         orderService.matchOrder(orderId);
         return ResponseEntity.ok(
