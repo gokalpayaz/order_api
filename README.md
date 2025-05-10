@@ -25,19 +25,29 @@ This application provides backend services for managing stock orders in a broker
 ## Prerequisites
 
 - Java 17 or higher
-- Maven 3.6 or higher
 - Docker and Docker Compose (for running ELK stack)
+- No Maven installation needed (Maven wrapper is included)
 
 ## Building the Application
 
+The project includes Maven wrapper scripts, so you don't need Maven installed:
+
 ```bash
-mvn clean package
+# On Linux/Mac/Windows with PowerShell
+./mvnw clean package
+
+# On Windows with Command Prompt
+mvnw.cmd clean package
 ```
 
 ## Running the Application
 
 ```bash
-mvn spring-boot:run
+# On Linux/Mac/Windows with PowerShell
+./mvnw spring-boot:run
+
+# On Windows with Command Prompt
+mvnw.cmd spring-boot:run
 ```
 
 The application will be available at `http://localhost:8080`.
@@ -159,7 +169,11 @@ Authorization: Bearer {your-jwt-token}
 ### Running Tests
 
 ```bash
-mvn test
+# On Linux/Mac/Windows with PowerShell
+./mvnw test
+
+# On Windows with Command Prompt
+mvnw.cmd test
 ```
 
 ### Test Coverage
@@ -179,7 +193,7 @@ Authorization: Bearer {your-jwt-token}
 
 ### List Orders
 ```
-GET /orders?customerId=2&start=2023-01-01&end=2023-12-31
+GET /orders?customerId=2&start=2024-01-01&end=2024-12-31
 Authorization: Bearer {your-jwt-token}
 ```
 
