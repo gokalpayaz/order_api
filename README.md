@@ -30,6 +30,30 @@ This application provides backend services for managing stock orders in a broker
 
 ## Building the Application
 
+### Setting up the ELK Stack
+
+The ELK stack (Elasticsearch, Logstash, Kibana) is required for the application to run properly. The project includes a pre-configured Docker Compose setup in the `logstash` directory:
+
+1. Navigate to the project root directory
+2. Run the ELK stack using the provided Docker Compose configuration:
+```bash
+cd logstash
+docker-compose up -d
+```
+3. Wait until all 3 containers are up.
+   
+This will start:
+- Elasticsearch on port 9200
+- Logstash on port 5000 (configured to receive JSON logs)
+- Kibana on port 5601
+
+The configuration files are already included in the project:
+- `logstash/docker-compose.yaml`: Docker Compose configuration for the ELK stack
+- `logstash/logstash.conf`: Logstash pipeline configuration
+
+> **Important**: The application has a dependency on the ELK stack and may fail to start or function properly if these services are not running.
+> 
+
 The project includes Maven wrapper scripts, so you don't need Maven installed:
 
 ```bash
@@ -39,6 +63,7 @@ The project includes Maven wrapper scripts, so you don't need Maven installed:
 # On Windows with Command Prompt
 mvnw.cmd clean package
 ```
+
 
 ## Running the Application
 
@@ -50,8 +75,6 @@ mvnw.cmd clean package
 mvnw.cmd spring-boot:run
 ```
 
-The application will be available at `http://localhost:8080`.
-
 An H2 console is available at `http://localhost:8080/h2-console` with the following connection details:
 - JDBC URL: `jdbc:h2:mem:brokerage`
 - Username: `root`
@@ -60,26 +83,6 @@ An H2 console is available at `http://localhost:8080/h2-console` with the follow
 ## Monitoring and Logging
 
 The application is integrated with the ELK Stack for comprehensive logging and monitoring:
-
-### Setting up the ELK Stack
-
-The project includes a pre-configured Docker Compose setup for the ELK stack in the `logstash` directory:
-
-1. Navigate to the project root directory
-2. Run the ELK stack using the provided Docker Compose configuration:
-```bash
-cd logstash
-docker-compose up -d
-```
-
-This will start:
-- Elasticsearch on port 9200
-- Logstash on port 5000 (configured to receive JSON logs)
-- Kibana on port 5601
-
-The configuration files are already included in the project:
-- `logstash/docker-compose.yaml`: Docker Compose configuration for the ELK stack
-- `logstash/logstash.conf`: Logstash pipeline configuration
 
 ### Kibana Dashboard
 
@@ -91,13 +94,18 @@ Kibana provides visualization of application logs and metrics, accessible at:
 To view application logs in Kibana, you need to create an index pattern:
 
 1. Open Kibana at `http://localhost:5601`
-2. Navigate to Management → Stack Management → Kibana → Index Patterns
+2. Navigate to Management → Stack Management → Data → Index Management. If you already started the application (recommended), there should be one already so you can skip index creation steps.
 3. Click "Create index pattern"
-4. Enter `logstash-*` as the index pattern
-5. Select `@timestamp` as the Time field
-6. Click "Create index pattern"
 
-After creating the index pattern, you can view logs in the Discover section of Kibana.
+
+After Index creation, we should create a data view to display our logs.
+1. Navigate to Analytics → Discover.
+2. Click "Create data view"
+3. Name anything you'd like.
+4. Use `logstash-*` as the index pattern
+5. Select `@timestamp` as the Time field
+6. Click "Save data view to Kibana"
+
 
 ### Log Management
 
