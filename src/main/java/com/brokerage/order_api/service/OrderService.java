@@ -33,7 +33,7 @@ public class OrderService {
     public void createOrder(Customer customer, String assetName, OrderSide orderSide, BigDecimal orderSize, BigDecimal price) {
 
         Asset depositAsset = assetRepository.findByCustomerIdAndName(customer.getId(), "TRY")
-                .orElseThrow(() -> new EntityNotFoundException("TRY asset was not found for the customer"));
+                .orElseThrow(() -> new EntityNotFoundException("TRY asset was not found"));
         Asset targetAsset = new Asset();
 
         if (orderSide == OrderSide.BUY) {
@@ -110,7 +110,9 @@ public class OrderService {
         } else {
             targetAsset.setUsableSize(targetAsset.getUsableSize().add(orderSize));
         }
+        assetRepository.save(depositAsset);
         order.setStatus(OrderStatus.CANCELED);
+        orderRepository.save(order);
         log.info("{} Order for {} cancelled ", orderSide, targetAsset.getName());
 
     }
@@ -139,6 +141,9 @@ public class OrderService {
             depositAsset.setSize(depositAsset.getSize().add(orderValue));
         }
         order.setStatus(OrderStatus.MATCHED);
+        orderRepository.save(order);
+        assetRepository.save(depositAsset);
+        assetRepository.save(targetAsset);
         log.info("{} Order for {} matched ", orderSide, targetAsset.getName());
     }
 }
