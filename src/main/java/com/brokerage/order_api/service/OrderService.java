@@ -89,6 +89,9 @@ public class OrderService {
     }
 
     public List<Order> listOrders (Customer customer, Instant start, Instant end){
+        if (!start.isBefore(end)) {
+            throw new IllegalArgumentException("Start time must be before end time");
+        }
         return orderRepository.findByCustomerIdAndCreatedAtBetween(customer.getId(),start,end);
     }
 

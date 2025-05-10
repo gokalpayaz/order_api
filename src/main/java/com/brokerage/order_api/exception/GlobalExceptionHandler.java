@@ -51,6 +51,18 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAccessDenied(IllegalArgumentException e) {
+        log.error("Illegal argument : {}", e.getMessage(), e);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+            ApiResponse.<Void>builder()
+                .success(false)
+                .message(e.getMessage())
+                .data(null)
+                .build()
+        );
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleOtherExceptions(Exception e) {
         log.error("Unexpected error: {}", e.getMessage(), e);
